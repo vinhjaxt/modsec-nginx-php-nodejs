@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  forum:
+    build: './build'
+    restart: always
+    environment:
+      - HOSTNAME=localhost
+    volumes:
+      - ../.run/forum:/tmp/.run:rw
+      - ../.run/forum.mysql:/var/run/mysqld:ro
+      - ../public_html/forum:/home/public_html:rw
+      - ./logs:/var/log/php-fpm:rw
+      - ./custom-php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      - ./custom-php.ini:/usr/local/etc/php/conf.d/0-vinhjaxt-custom-php.ini:ro
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0.29
+    restart: always
+    volumes:
+      - ../.run/forum.mysql:/var/run/mysqld:rw
+      - ./mysql.data:/var/lib/mysql:rw
+    environment:
+      - MYSQL_ROOT_PASSWORD=local_passwd
+      - MYSQL_DATABASE=local_db
+      - MYSQL_USER=local_user
+      - MYSQL_PASSWORD=local_passwd

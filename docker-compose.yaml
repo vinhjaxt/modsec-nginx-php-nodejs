@@ -1,0 +1,97 @@
+version: "3"
+
+services:
+  crs:
+    #######################################################
+    # Volumes for ModSecurity Tuning
+    #######################################################
+    volumes:
+      - ./coreruleset/rules:/opt/owasp-crs/rules:ro
+      - ./default.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - ./logs/modsec:/var/log/modsecurity:rw
+      - ./logs/nginx:/var/log/nginx-logs:rw
+
+      - ./.run:/var/run/.run:ro
+      - ./public_html:/home/public_html:ro
+      - ./php-mysql/nginx.conf:/etc/nginx/conf.d/php-mysql.conf:ro
+      - ./node-pgsql/nginx.conf:/etc/nginx/conf.d/node-pgsql.conf:ro
+
+    #######################################################
+    # Add TLS server certificate and key
+    # (only available if SETPROXY was enabled during the
+    # parent ModSecurity image)
+    #######################################################
+    #  - ./server.crt:/usr/local/apache2/conf/server.crt
+    #  - ./server.key:/usr/local/apache2/conf/server.key
+
+    environment:
+      - SERVERNAME=localhost
+
+      #############################################
+      # CRS Variables
+      #############################################
+      - ACCESSLOG=/dev/null
+      - METRICSLOG=/var/log/nginx-logs/access.log
+      - ERRORLOG=/var/log/nginx-logs/error.log
+      - MODSEC_AUDIT_ENGINE=RelevantOnly
+      - MODSEC_AUDIT_LOG=/var/log/modsecurity/audit.log
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - MODSEC_AUDIT_LOG_TYPE=Serial
+      - MODSEC_AUDIT_STORAGE=/var/log/modsecurity/audit/
+      - MODSEC_REQ_BODY_LIMIT=1073741824
+
+      # Paranoia Level
+      - PARANOIA=4
+      # Replaces PARANOIA as of CRS 4
+      - BLOCKING_PARANOIA=1
+      # Inbound and Outbound Anomaly Score Threshold
+      - ANOMALY_INBOUND=6
+      - ANOMALY_OUTBOUND=4
+      # Executing Paranoia Level
+      # - EXECUTING_PARANOIA=2
+      #
+      # Replaces EXECUTING_PARANOIA as of CRS 4
+      # - DETECTION_PARANOIA=2
+      #
+      # New in CRS 4
+      - REPORTING_LEVEL=2
+
+      #######################################################
+      # Reverse Proxy mode
+      # (only available if SETPROXY was enabled during the
+      # parent ModSecurity image)
+      #######################################################
+      # PROXYLOCATION: Application Backend of Reverse Proxy
+      # - PROXYLOCATION=http://app:8000/
+      #
+      # If needed: add own httpd-proxy.conf (only available if SETPROXY
+      # was enabled during build of parent ModSecurity image)
+      #  - ./httpd-proxy.conf:/usr/local/apache2/conf/extra/httpd-proxy.conf
+
+      #######################################################
+      # Various CRS Variables with Default Values
+      #######################################################
+      #- ENFORCE_BODYPROC_URLENCODED=1
+      - ALLOWED_METHODS=GET POST OPTIONS PUT PATCH DELETE
+      #- ALLOWED_REQUEST_CONTENT_TYPE=application/x-www-form-urlencoded|multipart/form-data|text/xml|application/xml|application/soap+xml|application/x-amf|application/json|application/octet-stream|text/plain
+      #- ALLOWED_REQUEST_CONTENT_TYPE_CHARSET=utf-8|iso-8859-1|iso-8859-15|windows-1252
+      #- ALLOWED_HTTP_VERSIONS=HTTP/1.0 HTTP/1.1 HTTP/2 HTTP/2.0
+      #- RESTRICTED_EXTENSIONS=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ .cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ .dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ .old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ .vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/
+      #- RESTRICTED_HEADERS=/proxy/ /lock-token/ /content-range/ /if/
+      #- STATIC_EXTENSIONS=/.jpg/ /.jpeg/ /.png/ /.gif/ /.js/ /.css/ /.ico/ /.svg/ /.webp/
+
+      #######################################################
+      # CRS Variables with Default Value unlimited
+      #######################################################
+      #- MAX_NUM_ARGS=255
+      #- ARG_NAME_LENGTH=100
+      #- ARG_LENGTH=400
+      #- TOTAL_ARG_LENGTH=64000
+      #- MAX_FILE_SIZE=1048576
+      #- COMBINED_FILE_SIZES=1048576
+
+    image: owasp/modsecurity-crs:nginx-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"

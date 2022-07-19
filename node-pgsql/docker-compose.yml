@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  http:
+    build: './build'
+    restart: always
+    environment:
+      - HOSTNAME=localhost
+    volumes:
+      - ../.run/node-pgsql:/tmp/.run:rw
+      - ../.run/node.pgsql:/var/run/postgresql:ro
+      - ../public_html/node-pgsql:/home/public_html:rw
+      - ./build/app:/opt/app:ro
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    restart: always
+    volumes:
+      - ../.run/node.pgsql:/var/run/postgresql:rw
+      - ./psql.data:/var/lib/postgresql:rw
+    environment:
+      - POSTGRES_DB=local_db
+      - POSTGRES_USER=local_user
+      - POSTGRES_PASSWORD=local_passwd
