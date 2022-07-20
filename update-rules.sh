@@ -18,3 +18,6 @@ git pull
 git checkout .
 cd "${DIR}"
 cp -a "${DIR}/custom_rules/." "${DIR}/coreruleset/rules/"
+
+docker-compose kill
+docker-compose up -d
