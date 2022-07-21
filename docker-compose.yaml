@@ -35,10 +35,12 @@ services:
       - ERRORLOG=/var/log/nginx-logs/error.log
       - MODSEC_AUDIT_ENGINE=RelevantOnly
       - MODSEC_AUDIT_LOG=/var/log/modsecurity/audit.log
-      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - MODSEC_AUDIT_LOG_FORMAT=Native
       - MODSEC_AUDIT_LOG_TYPE=Serial
       - MODSEC_AUDIT_STORAGE=/var/log/modsecurity/audit/
       - MODSEC_REQ_BODY_LIMIT=1073741824
+      - MODSEC_RESP_BODY_ACCESS=On
+      - MODSEC_AUDIT_LOG_PARTS=ABIJDEFHZ # https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x)#secauditlogparts
 
       # Paranoia Level
       - PARANOIA=4
