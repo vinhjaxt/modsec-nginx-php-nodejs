@@ -12,8 +12,8 @@ cd ./php-mysql
 ./run.sh
 ```
 
-# Start node-psql
+# Start node-pgsql
 ```sh
-cd ./node-psql
+cd ./node-pgsql
 docker-compose up -d
 ```
